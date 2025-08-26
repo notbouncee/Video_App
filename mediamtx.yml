@@ -1,0 +1,33 @@
+# mediamtx.yml
+# --- Global HLS settings ---
+hlsVariant: mpegts         # more forgiving than fMP4 for many setups
+hlsSegmentDuration: 2s     # match your 2s GOP (g=60 @ 30fps)
+hlsPartDuration: 0s        # disable LL-HLS parts -> classic HLS
+
+
+# Two mock cameras: cam1, cam2
+# Each uses ffmpeg -re (read at native frame rate) and -stream_loop -1 (loop forever)
+paths:
+  cam1:
+    runOnInit: >-
+      ffmpeg -re -stream_loop -1 -i /videos/cam1.mp4
+      -c copy -f rtsp rtsp://localhost:$RTSP_PORT/$MTX_PATH
+    runOnInitRestart: yes
+
+  cam2:
+    runOnInit: >-
+      ffmpeg -re -stream_loop -1 -fflags +genpts -i /videos/cam2.mp4
+      -map 0:v:0 -map 0:a:0?
+      -vf fps=30,format=yuv420p
+      -c:v libx264 -profile:v main -level 4.1
+      -x264-params "bframes=0:ref=1:keyint=60:min-keyint=60:scenecut=0"
+      -g 60 -keyint_min 60 -sc_threshold 0 -preset veryfast -tune zerolatency
+      -c:a aac -ar 48000 -ac 2 -b:a 128k
+      -f rtsp rtsp://127.0.0.1:8554/$MTX_PATH
+    runOnInitRestart: yes
+
+  cam3:
+    runOnInit: >-
+      ffmpeg -re -stream_loop -1 -i /videos/cam3.mp4
+      -c copy -f rtsp rtsp://localhost:$RTSP_PORT/$MTX_PATH
+    runOnInitRestart: yes

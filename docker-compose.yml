@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/health || exit 1"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+
+  mediamtx:
+    image: bluenviron/mediamtx:latest-ffmpeg   # includes ffmpeg
+    container_name: mediamtx
+    restart: unless-stopped
+    volumes:
+      - ./mediamtx.yml:/mediamtx.yml:ro
+      - ./videos:/videos:ro
+    # Use ONE of the two networking options below:
+
+    # ----- Option A: Host networking (best for Linux) -----
+    # network_mode: host
+
+    # ----- Option B: Port mappings (use this on Windows/macOS with Docker Desktop) -----
+    ports:
+      # RTSP
+      - "8554:8554/tcp"
+      # UDP ports used for RTP/RTCP (RTSP over UDP)
+      - "8000:8000/udp"
+      - "8001:8001/udp"
+      - "8002:8002/udp"
+      - "8003:8003/udp"
+      # RTMP (optional)
+      - "1935:1935/tcp"
+      # HLS web page + HLS playlists/segments
+      - "8888:8888/tcp"
+      # WebRTC web page (ICE will use dynamic ports via the mappings above)
+      - "8889:8889/tcp"
+
