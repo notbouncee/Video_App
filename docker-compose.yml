@@ -22,12 +22,10 @@ services:
     volumes:
       - ./mediamtx.yml:/mediamtx.yml:ro
       - ./videos:/videos:ro
-    # Use ONE of the two networking options below:
+      - ./aliases:/opt/aliases:ro       
+      - ./scripts:/opt/scripts:ro 
 
-    # ----- Option A: Host networking (best for Linux) -----
-    # network_mode: host
-
-    # ----- Option B: Port mappings (use this on Windows/macOS with Docker Desktop) -----
+    # Port mappings (use this on Windows/macOS with Docker Desktop) -----
     ports:
       # RTSP
       - "8554:8554/tcp"
